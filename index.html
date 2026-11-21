@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>JONITA BOTS</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d31;--line:#293550;--text:#edf2ff;--muted:#a8b4cc;--accent:#7c8cff;--green:#38c995}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1020,#151b33);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:22px max(18px,calc((100% - 1000px)/2));border-bottom:1px solid var(--line);background:#0b1020cc}
+h1{margin:0;font-size:1.5rem}header p{margin:5px 0 0;color:var(--muted);font-size:.9rem}
+main{max-width:1000px;margin:24px auto;padding:0 16px;display:grid;gap:18px}
+.notice{background:#302b1c;border:1px solid #66572c;color:#ffe7a3;padding:13px 15px;border-radius:12px;font-size:.9rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+h2{font-size:1.08rem;margin:0 0 14px}form{display:grid;gap:12px}
+label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;background:#0d1528;color:var(--text);padding:11px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 15px;background:var(--accent);color:white;font-weight:650;font:inherit;cursor:pointer}
+button.secondary{background:#27334d}button.danger{background:#783b4b}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.bot{border:1px solid var(--line);border-radius:13px;padding:14px;background:#10182b}
+.bot h3{margin:0 0 6px}.muted{color:var(--muted);font-size:.88rem;white-space:pre-wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{font-size:.8rem;color:var(--green)}
+.empty{color:var(--muted);padding:10px 0}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:10px 16px 28px}
+@media(min-width:700px){form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+</style></head>
+<body>
+<header><h1>🤖 JONITA BOTS</h1><p>Panel de administración de tus asistentes</p></header>
+<main>
+<div class="notice"><strong>Modo de prueba:</strong> este panel guarda los bots en este navegador. WhatsApp todavía no está conectado; crear un bot aquí no activa ni envía mensajes por WhatsApp.</div>
+<section class="panel"><h2>Crear un bot</h2>
+<form id="botForm">
+<div class="two"><label>Nombre del bot<input id="name" required maxlength="50" placeholder="Ej. Atención al cliente"></label>
+<label>Personalidad / instrucciones<input id="personality" required maxlength="500" placeholder="Amable, claro y breve..."></label></div>
+<label>Cómo debe participar<select id="mode"><option value="asistente">Responder cuando se le consulte</option><option value="grupo">Participar en grupos asignados (cuando se integre)</option><option value="pausado">Crear pausado</option></select></label>
+<button type="submit">＋ Crear bot</button>
+</form></section>
+<section class="panel"><h2>Mis bots</h2><div id="bots" class="grid"><p class="empty">Todavía no creaste bots.</p></div></section>
+<section class="panel"><h2>Próximas funciones</h2><p class="muted">Conexión segura con WhatsApp · asignación de números · selección de grupos y contactos · activar o pausar bots · historial de conversaciones · controles de envío y permisos.</p></section>
+</main><footer>JONITA BOTS · Panel inicial</footer>
+<script>
+const KEY='jonita-bots-v1';let bots=[];try{bots=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){bots=[]}
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(bots));render()}
+function render(){const root=$('bots');root.innerHTML='';if(!bots.length){root.innerHTML='<p class="empty">Todavía no creaste bots.</p>';return}
+bots.forEach((b,i)=>{const card=document.createElement('article');card.className='bot';
+const title=document.createElement('h3');title.textContent=b.name;
+const state=document.createElement('div');state.className='status';state.textContent=b.active?'● Activo en el panel':'● Pausado';
+const desc=document.createElement('p');desc.className='muted';desc.textContent=b.personality;
+const mode=document.createElement('p');mode.className='muted';mode.textContent='Modo: '+b.mode;
+const actions=document.createElement('div');actions.className='actions';
+const toggle=document.createElement('button');toggle.className='secondary';toggle.textContent=b.active?'Pausar':'Activar';toggle.onclick=()=>{bots[i].active=!bots[i].active;save()};
+const del=document.createElement('button');del.className='danger';del.textContent='Eliminar';del.onclick=()=>{if(confirm('¿Eliminar este bot de este navegador?')){bots.splice(i,1);save()}};
+actions.append(toggle,del);card.append(title,state,desc,mode,actions);root.append(card)})}
+$('botForm').addEventListener('submit',e=>{e.preventDefault();bots.push({id:Date.now(),name:$('name').value.trim(),personality:$('personality').value.trim(),mode:$('mode').value,active:$('mode').value!=='pausado'});save();e.target.reset()});render();
+</script></body></html>

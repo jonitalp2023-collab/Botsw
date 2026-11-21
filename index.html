@@ -37,10 +37,21 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;padding:10px 16px 28
 <button type="submit">＋ Crear bot</button>
 </form></section>
 <section class="panel"><h2>Mis bots</h2><div id="bots" class="grid"><p class="empty">Todavía no creaste bots.</p></div></section>
-<section class="panel"><h2>Próximas funciones</h2><p class="muted">Conexión segura con WhatsApp · asignación de números · selección de grupos y contactos · activar o pausar bots · historial de conversaciones · controles de envío y permisos.</p></section>
+<section class="panel"><h2>📱 Números de WhatsApp</h2>
+<p class="muted">Agregá los números que querés administrar. Por ahora quedan registrados solamente en este navegador; todavía no se conectan ni envían mensajes.</p>
+<form id="numberForm">
+<label>Nombre para identificar la línea<input id="lineName" required maxlength="40" placeholder="Ej. Ventas"></label>
+<label>Número de WhatsApp con código de país<input id="phoneNumber" required type="tel" maxlength="20" placeholder="Ej. +5492211234567"></label>
+<button type="submit">＋ Agregar número</button>
+</form>
+<div id="numbers" class="grid" style="margin-top:14px"><p class="empty">Todavía no agregaste números.</p></div>
+<p class="muted" style="margin-top:14px">La conexión real se hará mediante WhatsApp Business Platform (Meta). Nunca pegues aquí contraseñas ni tokens privados.</p>
+</section>
+<section class="panel"><h2>Próximas funciones</h2><p class="muted">Conexión segura con WhatsApp · asignación de bots a números · selección de grupos y contactos compatibles · activar o pausar bots · historial de conversaciones · controles de envío y permisos.</p></section>
 </main><footer>JONITA BOTS · Panel inicial</footer>
 <script>
 const KEY='jonita-bots-v1';let bots=[];try{bots=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){bots=[]}
+const NUMBER_KEY='jonita-whatsapp-lines-v1';let numbers=[];try{numbers=JSON.parse(localStorage.getItem(NUMBER_KEY)||'[]')}catch(e){numbers=[]}
 const $=id=>document.getElementById(id);
 function save(){localStorage.setItem(KEY,JSON.stringify(bots));render()}
 function render(){const root=$('bots');root.innerHTML='';if(!bots.length){root.innerHTML='<p class="empty">Todavía no creaste bots.</p>';return}
@@ -53,5 +64,10 @@ const actions=document.createElement('div');actions.className='actions';
 const toggle=document.createElement('button');toggle.className='secondary';toggle.textContent=b.active?'Pausar':'Activar';toggle.onclick=()=>{bots[i].active=!bots[i].active;save()};
 const del=document.createElement('button');del.className='danger';del.textContent='Eliminar';del.onclick=()=>{if(confirm('¿Eliminar este bot de este navegador?')){bots.splice(i,1);save()}};
 actions.append(toggle,del);card.append(title,state,desc,mode,actions);root.append(card)})}
-$('botForm').addEventListener('submit',e=>{e.preventDefault();bots.push({id:Date.now(),name:$('name').value.trim(),personality:$('personality').value.trim(),mode:$('mode').value,active:$('mode').value!=='pausado'});save();e.target.reset()});render();
+$('botForm').addEventListener('submit',e=>{e.preventDefault();bots.push({id:Date.now(),name:$('name').value.trim(),personality:$('personality').value.trim(),mode:$('mode').value,active:$('mode').value!=='pausado'});save();e.target.reset()});
+function saveNumbers(){localStorage.setItem(NUMBER_KEY,JSON.stringify(numbers));renderNumbers()}
+function renderNumbers(){const root=$('numbers');root.innerHTML='';if(!numbers.length){root.innerHTML='<p class="empty">Todavía no agregaste números.</p>';return}
+numbers.forEach((n,i)=>{const card=document.createElement('article');card.className='bot';const title=document.createElement('h3');title.textContent=n.label;const phone=document.createElement('p');phone.className='muted';phone.textContent=n.phone;const status=document.createElement('p');status.className='status';status.style.color='#f0c36a';status.textContent='Pendiente de conexión oficial';const del=document.createElement('button');del.className='danger';del.textContent='Quitar';del.onclick=()=>{if(confirm('¿Quitar este número del panel?')){numbers.splice(i,1);saveNumbers()}};card.append(title,phone,status,del);root.append(card)})}
+$('numberForm').addEventListener('submit',e=>{e.preventDefault();const label=$('lineName').value.trim();const phone=$('phoneNumber').value.trim();if(!/^\\+?[0-9 ()-]{8,20}$/.test(phone)){alert('Ingresá un número válido con código de país.');return}numbers.push({id:Date.now(),label,phone});saveNumbers();e.target.reset()});
+render();renderNumbers();
 </script></body></html>

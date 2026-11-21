@@ -60,12 +60,19 @@ const title=document.createElement('h3');title.textContent=b.name;
 const state=document.createElement('div');state.className='status';state.textContent=b.active?'● Activo en el panel':'● Pausado';
 const desc=document.createElement('p');desc.className='muted';desc.textContent=b.personality;
 const mode=document.createElement('p');mode.className='muted';mode.textContent='Modo: '+b.mode;
+const assignLabel=document.createElement('label');assignLabel.textContent='Línea de WhatsApp asignada';
+const assign=document.createElement('select');assign.setAttribute('aria-label','Línea de WhatsApp asignada');
+const none=document.createElement('option');none.value='';none.textContent='Sin asignar';assign.append(none);
+numbers.forEach(n=>{const opt=document.createElement('option');opt.value=String(n.id);opt.textContent=n.label+' ('+n.phone+')';assign.append(opt)});
+assign.value=b.numberId?String(b.numberId):'';
+assign.addEventListener('change',()=>{bots[i].numberId=assign.value||null;save()});
+assignLabel.append(assign);
 const actions=document.createElement('div');actions.className='actions';
 const toggle=document.createElement('button');toggle.className='secondary';toggle.textContent=b.active?'Pausar':'Activar';toggle.onclick=()=>{bots[i].active=!bots[i].active;save()};
 const del=document.createElement('button');del.className='danger';del.textContent='Eliminar';del.onclick=()=>{if(confirm('¿Eliminar este bot de este navegador?')){bots.splice(i,1);save()}};
-actions.append(toggle,del);card.append(title,state,desc,mode,actions);root.append(card)})}
+actions.append(toggle,del);card.append(title,state,desc,mode,assignLabel,actions);root.append(card)})}
 $('botForm').addEventListener('submit',e=>{e.preventDefault();bots.push({id:Date.now(),name:$('name').value.trim(),personality:$('personality').value.trim(),mode:$('mode').value,active:$('mode').value!=='pausado'});save();e.target.reset()});
-function saveNumbers(){localStorage.setItem(NUMBER_KEY,JSON.stringify(numbers));renderNumbers()}
+function saveNumbers(){localStorage.setItem(NUMBER_KEY,JSON.stringify(numbers));renderNumbers();render()}
 function renderNumbers(){const root=$('numbers');root.innerHTML='';if(!numbers.length){root.innerHTML='<p class="empty">Todavía no agregaste números.</p>';return}
 numbers.forEach((n,i)=>{const card=document.createElement('article');card.className='bot';const title=document.createElement('h3');title.textContent=n.label;const phone=document.createElement('p');phone.className='muted';phone.textContent=n.phone;const status=document.createElement('p');status.className='status';status.style.color='#f0c36a';status.textContent='Pendiente de conexión oficial';const del=document.createElement('button');del.className='danger';del.textContent='Quitar';del.onclick=()=>{if(confirm('¿Quitar este número del panel?')){numbers.splice(i,1);saveNumbers()}};card.append(title,phone,status,del);root.append(card)})}
 $('numberForm').addEventListener('submit',e=>{e.preventDefault();const label=$('lineName').value.trim();const rawPhone=$('phoneNumber').value.trim();const digits=rawPhone.replace(/\D/g,'');if(!rawPhone.startsWith('+')||digits.length<10||digits.length>15){alert('Ingresá el número con + y código de país. Ejemplo: +5492211234567');return}const phone='+'+digits;numbers.push({id:Date.now(),label,phone});saveNumbers();e.target.reset()});
